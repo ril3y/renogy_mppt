@@ -14,6 +14,8 @@ Bluetooth LE (via a BT-1/BT-2 module). Protocol + data model only — no UI.
   factory-reset commands are deliberately not implemented.
 
 The register map was recovered by static analysis of the Renogy DC Home app and
-verified live against real hardware.
+verified live against a Renogy **Rover Boost `RCC10RVRB`** on a 48 V bank
+(battery 51.8 V, SOC/stage/temperatures/faults all consistent) using the
+`example/` harness.
 
 > **Safety:** this library only reads. It never changes controller settings.

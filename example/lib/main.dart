@@ -6,6 +6,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:renogy_mppt/renogy_mppt.dart';
 import 'package:universal_ble/universal_ble.dart';
 
@@ -81,6 +82,23 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _copy() async {
+    final buf = StringBuffer()
+      ..writeln('Renogy MPPT live read — ${DateTime.now().toIso8601String()}')
+      ..writeln('Status: $_status');
+    final snap = _snap;
+    if (snap != null) {
+      snapshotRows(_identity, snap).forEach((k, v) => buf.writeln('$k: $v'));
+    } else {
+      buf.writeln('(no snapshot yet)');
+    }
+    await Clipboard.setData(ClipboardData(text: buf.toString()));
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Copied readings to clipboard')));
+    }
+  }
+
   Future<void> _teardown() async {
     await _snapSub?.cancel();
     _snapSub = null;
@@ -101,7 +119,14 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Renogy MPPT — live harness'),
-        actions: [IconButton(onPressed: _startScan, icon: const Icon(Icons.refresh))],
+        actions: [
+          IconButton(onPressed: _startScan, icon: const Icon(Icons.refresh), tooltip: 'Rescan'),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _copy,
+        icon: const Icon(Icons.copy),
+        label: const Text('Copy readings'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -122,15 +147,9 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _SnapshotView extends StatelessWidget {
-  final ControllerIdentity? identity;
-  final ChargeControllerSnapshot s;
-  const _SnapshotView(this.identity, this.s);
-
-  @override
-  Widget build(BuildContext context) {
-    final rows = <String, String>{
-      if (identity != null) 'Model': identity!.sku,
+/// The rows shown on screen and copied to the clipboard — one source of truth.
+Map<String, String> snapshotRows(ControllerIdentity? identity, ChargeControllerSnapshot s) => {
+      if (identity != null) 'Model': identity.sku,
       if (identity?.serial != null) 'Serial': identity!.serial!,
       'SOC': '${s.socPercent} %',
       'Battery': '${s.batteryVoltage.toStringAsFixed(1)} V   ${s.chargingCurrent.toStringAsFixed(2)} A',
@@ -142,6 +161,15 @@ class _SnapshotView extends StatelessWidget {
       'Today': '${s.energyTodayKwh.toStringAsFixed(3)} kWh',
       'Faults': s.faults.isEmpty ? 'none' : s.faults.map((f) => f.name).join(', '),
     };
+
+class _SnapshotView extends StatelessWidget {
+  final ControllerIdentity? identity;
+  final ChargeControllerSnapshot s;
+  const _SnapshotView(this.identity, this.s);
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = snapshotRows(identity, s);
     return ListView(
       children: [
         for (final e in rows.entries)
