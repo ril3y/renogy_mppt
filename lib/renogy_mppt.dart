@@ -4,5 +4,6 @@
 library;
 
 export 'src/gatt.dart';
+export 'src/identity.dart';
 export 'src/model.dart';
 export 'src/registers.dart';

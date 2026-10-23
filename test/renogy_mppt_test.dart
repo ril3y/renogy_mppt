@@ -68,4 +68,29 @@ void main() {
     expect(decodeFaults((1 << 2) | (1 << 14)),
         [ControllerFault.pvReverse, ControllerFault.batteryOverDischarge]);
   });
+
+  test('SKU decodes ASCII and identifies a controller', () {
+    final regs = _skuRegs('RNG-CTRL-RVR40  '); // 16 bytes -> 8 regs
+    expect(decodeSku(regs), 'RNG-CTRL-RVR40');
+    expect(isControllerSku('RNG-CTRL-RVR40'), isTrue);
+    expect(isControllerSku('RCC60REGO-G2'), isTrue);
+  });
+
+  test('serial decodes ASCII with trailing padding trimmed', () {
+    expect(decodeSerial(_skuRegs('SN12345678        ')), 'SN12345678'); // 18 chars -> 9 regs
+  });
+
+  test('a battery SKU is NOT a controller', () {
+    expect(isControllerSku('RBT100LFP12S'), isFalse); // shared FFD0, must be rejected
+  });
+}
+
+/// Pack ASCII into big-endian 16-bit registers (2 chars per register).
+List<int> _skuRegs(String s) {
+  final b = s.codeUnits;
+  final regs = <int>[];
+  for (var i = 0; i < b.length; i += 2) {
+    regs.add((b[i] << 8) | (i + 1 < b.length ? b[i + 1] : 0));
+  }
+  return regs;
 }
