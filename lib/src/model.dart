@@ -33,7 +33,7 @@ class ChargeControllerSnapshot {
   final double energyTodayKwh;
 
   final ChargeStage stage;
-  final int faultMask;
+  final List<ControllerFault> faults;
 
   const ChargeControllerSnapshot({
     required this.time,
@@ -53,7 +53,7 @@ class ChargeControllerSnapshot {
     required this.maxBatteryVoltageTodayV,
     required this.energyTodayKwh,
     required this.stage,
-    required this.faultMask,
+    required this.faults,
   });
 
   /// Build a snapshot from a decoded realtime block.
@@ -76,6 +76,6 @@ class ChargeControllerSnapshot {
         maxBatteryVoltageTodayV: rt.maxBatteryVoltageTodayV,
         energyTodayKwh: rt.energyTodayKwh,
         stage: rt.stage,
-        faultMask: rt.faultMask,
+        faults: rt.faults,
       );
 }

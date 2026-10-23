@@ -60,4 +60,12 @@ void main() {
     final rt = ControllerRealtime(_rt(genHi: 1, genLo: 0)); // 0x10000 = 65536 x0.001
     expect(rt.energyTodayKwh, closeTo(65.536, 1e-9));
   });
+
+  test('fault bits C0..C14 decode in order', () {
+    expect(decodeFaults(0), isEmpty);
+    expect(decodeFaults(1 << 0), [ControllerFault.chargeMosShort]);
+    expect(decodeFaults(1 << 13), [ControllerFault.batteryOverVoltage]);
+    expect(decodeFaults((1 << 2) | (1 << 14)),
+        [ControllerFault.pvReverse, ControllerFault.batteryOverDischarge]);
+  });
 }

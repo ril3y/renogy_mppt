@@ -4,6 +4,30 @@
 
 int _s8(int b) => b >= 0x80 ? b - 0x100 : b;
 
+/// Controller fault/alarm flags, bits C0..C14 of the 32-bit field at 0x0121.
+/// Order matches the bit index (C0 = bit 0).
+enum ControllerFault {
+  chargeMosShort,
+  antiReverseMosShort,
+  pvReverse,
+  pvOverVoltage,
+  pvCounterCurrent,
+  pvInputOverVoltage,
+  pvInputShort,
+  pvOverpower,
+  ambientTempHigh,
+  controllerTempHigh,
+  loadOverpower,
+  loadShort,
+  batteryUnderVoltage,
+  batteryOverVoltage,
+  batteryOverDischarge,
+}
+
+/// Decode the 32-bit fault bitfield into the active faults, in bit order.
+List<ControllerFault> decodeFaults(int mask) =>
+    [for (var i = 0; i < ControllerFault.values.length; i++) if ((mask >> i) & 1 != 0) ControllerFault.values[i]];
+
 /// Controller charge stage (low byte of register 0x0120).
 enum ChargeStage {
   deactivated,
@@ -42,4 +66,5 @@ class ControllerRealtime {
   double get energyTodayKwh => ((_u(28) << 16) | _u(29)) / 1000.0; // 0x011C/D, 32-bit x0.001 kWh
   ChargeStage get stage => ChargeStage.fromCode(_u(32) & 0xFF); // low byte of 0x0120
   int get faultMask => (_u(33) << 16) | _u(34); // 0x0121/2, 32-bit
+  List<ControllerFault> get faults => decodeFaults(faultMask);
 }
