@@ -1,0 +1,24 @@
+name: renogy_mppt
+description: Renogy MPPT solar charge-controller driver - read-only Modbus-RTU over BLE (unit 0xFF), built on modbus_ble.
+version: 0.1.0
+publish_to: none
+repository: https://github.com/ril3y/renogy_mppt
+topics: [bluetooth, ble, solar, mppt, modbus]
+
+environment:
+  sdk: ^3.13.5
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  universal_ble: ^3.1.2
+  modbus_ble:
+    git:
+      url: https://github.com/ril3y/modbus_ble.git
+      ref: main
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
