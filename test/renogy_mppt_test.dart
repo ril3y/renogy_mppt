@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:modbus_ble/modbus_ble.dart';
 import 'package:renogy_mppt/renogy_mppt.dart';
+import 'package:universal_ble/universal_ble.dart';
 
 String _hex(List<int> b) => b.map((x) => x.toRadixString(16).padLeft(2, '0')).join();
 
@@ -82,6 +83,20 @@ void main() {
 
   test('a battery SKU is NOT a controller', () {
     expect(isControllerSku('RBT100LFP12S'), isFalse); // shared FFD0, must be rejected
+  });
+
+  test('advertisesLikeRenogy matches BT- names and FFD0 service', () {
+    final m = RenogyControllerMatcher();
+    expect(
+        m.advertisesLikeRenogy(
+            BleDevice(deviceId: 'a', name: 'BT-TH-66F8EE0D', rssi: -50, services: const [])),
+        isTrue);
+    expect(
+        m.advertisesLikeRenogy(BleDevice(deviceId: 'c', name: 'noname', rssi: -50, services: const [kWriteService])),
+        isTrue); // FFD0 advertised
+    expect(
+        m.advertisesLikeRenogy(BleDevice(deviceId: 'b', name: 'MacBook', rssi: -50, services: const [])),
+        isFalse);
   });
 }
 

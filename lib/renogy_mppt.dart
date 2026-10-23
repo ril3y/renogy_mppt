@@ -3,6 +3,7 @@
 /// and data model only; no UI, no writes.
 library;
 
+export 'src/controller.dart';
 export 'src/gatt.dart';
 export 'src/identity.dart';
 export 'src/model.dart';
